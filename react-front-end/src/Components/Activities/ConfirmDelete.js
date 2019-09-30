@@ -14,6 +14,7 @@ const StyledConfirmDelete = styled.div `
 	border-radius: 20px;
 	padding: 10px;
 	margin-top: 140px;
+	background: #eeeeeedd;
 
 	h1 {
 		font-size: 3rem;
@@ -87,9 +88,6 @@ export default function ConfirmDelete(props) {
 
 	// get the id value from the path
 	const id = Number.parseInt(props.match.params.id);
-
-	console.log('in confirm delete');
-	console.log(props.activities);
 
 	// find the activity in the activities array
 	const index = props.activities.findIndex(item => item.id === id);

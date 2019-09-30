@@ -4,19 +4,25 @@ import styled from 'styled-components'
 import Slider from 'react-slick'
 import "slick-carousel/slick/slick.css"
 
-export default function Insights({ insights, activities, addInsight, editInsight, deleteInsight}) {
+export default function Insights(props) {
+  const { insights, activities, addInsight, editInsight, deleteInsight } = props;
 
   const StyledInsights = styled.div `
     text-align: center;
-    margin-bottom: 30px;
+    margin: 100px 0 30px 0;
     & h1 {
       font-size: 2.6rem;
       text-transform: uppercase;
       letter-spacing: .2rem;
-      margin: 30px 0;
+      margin: 30px 0 15px 0;
+      color: white;
     }
     & form {
+      background: #eeeeeedd;
       margin: 20px 0;
+      padding: 5%;
+      border: 3px solid #00a0ba;
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: space-around;
@@ -33,8 +39,10 @@ export default function Insights({ insights, activities, addInsight, editInsight
         padding: 0 5%;
         font-family: inherit;
         font-size: 1.6rem;
+        color: black;
         border: none;
-        border-bottom: 1px solid #00a0ba;
+        border-bottom: 1px solid #eee;
+        background: none;
       }
       & button {
         background: #ec8b76;
@@ -46,7 +54,7 @@ export default function Insights({ insights, activities, addInsight, editInsight
         margin: 15px auto 0 auto;
         border: 1px solid transparent;
         border-radius: 10px;
-        padding: 2% 4%;
+        padding: 5px 10px;
         color: white;
         text-transform: uppercase;
         &:hover {
@@ -77,10 +85,36 @@ export default function Insights({ insights, activities, addInsight, editInsight
     margin: 20px 0;
     padding: 3%;
     outline: none;
-    & h3 {
-      font-size: 1.8rem;
-      text-transform: uppercase;
+    color: white;
+    transition: all .3s ease;
+    &:hover {
+      transform: scale(1.05);
     }
+    & .name {
+      font-size: 2.2rem;
+    }
+    & .category {
+      font-size: 2.0rem;
+      text-transform: uppercase;
+      margin: 5px;
+    }
+    & .rating {
+      font-size: 1.6rem;
+      margin: 5px;
+    }
+    & .time {
+      font-size: 1.6rem;
+      margin: 5px;
+    }
+    & .notes {
+      font-size: 1.6rem;
+      margin: 5px;
+    }
+    & .date {
+      font-size: 1.6rem;
+      margin: 5px;
+    }
+
   `
 
   const StyledReflectionCard = styled.div `
@@ -91,6 +125,11 @@ export default function Insights({ insights, activities, addInsight, editInsight
     border-radius: 10px;
     border: 3px solid #d9eeff;
     box-shadow: 0 1rem 1rem rgba(0,0,0,.6);
+    background: #eeeeeedd;
+    transition: all .3s ease;
+    &:hover {
+      transform: scale(1.05);
+    }
     & > * {
       margin-bottom: 10px;
     }
@@ -111,6 +150,27 @@ export default function Insights({ insights, activities, addInsight, editInsight
     }
   `
 
+  // for applying the search string to the activities
+  const match = (search, item) => {
+    const lc_search = search.toLowerCase();
+    const name = item.name.toLowerCase();
+    const notes = item.notes.toLowerCase();
+    const result = name.includes(lc_search) || notes.includes(lc_search);
+    return result;
+  }
+
+
+  const timeInHours = (time) => {
+    return Math.round(time / 6) / 10;
+  };
+
+
+  // if user is not logged in, return to top level
+  if (!props.status.loggedIn) {
+    props.history.push('/');
+  }
+
+
   return (
     <>
       <StyledInsights>
@@ -124,17 +184,22 @@ export default function Insights({ insights, activities, addInsight, editInsight
             slidesToShow={1}
             slidesToScroll={1}
             infinite={false}
-            autoplay={false}
-            autoplaySpeed={6000} 
+            autoplay={true}
+            autoplaySpeed={4000} 
             arrows={false}
           >
-            {activities.map((entry, index) => {
+            {activities.filter(item => match(props.search, item)).map((entry, index) => {
               return(
                 <StyledActivityCard key={index}>
                   <div className="card-inner">
-                    <h3>{entry.name} | <span>{entry.category}</span></h3>
-                    <p>Rating: {entry.rating}</p>
-                    <p>{(entry.time / 60).toFixed(1)} hours</p>
+
+                    <div className='name'>{entry.name}</div>
+                    <div className='category'>{entry.category}</div>
+                    <div className='rating'>Rating: {entry.rating} stars</div>
+                    <div className='time'>Duration: {timeInHours(entry.time)} hours</div>
+                    <div className='notes'>{entry.notes}</div>
+                    <div className='date'>Date: {entry.date}</div>
+
                   </div>
                 </StyledActivityCard>
               )

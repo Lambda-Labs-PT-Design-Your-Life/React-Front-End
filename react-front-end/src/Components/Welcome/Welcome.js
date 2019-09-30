@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import * as helpers from '../../Functions/helperFunctions';
 
 
 const StyledWelcome = styled.div `
@@ -9,14 +8,18 @@ const StyledWelcome = styled.div `
 	flex-direction: column;
 	align-items: center;
 	flex-direction: flex-start;
-	margin-top: 100px;
+	margin-top: 150px;
 	h1 {
 		font-size: 4rem;
 		margin: 20px;
+		color: white;
+		text-align: center;
 	}
 	h3 {
-		font-size: 2.4rem;
+		font-size: 2rem;
 		margin: 10px;
+		color: white;
+		text-align: center;
 	}
 	.navlinks {
 		display: flex;
@@ -30,33 +33,20 @@ const StyledWelcome = styled.div `
 		margin: 10px;
 		height: 35px;
 		width: 220px;
-		background-color: #00bc98;
+		background: linear-gradient(to right, #00bc98bb, #98f7e5bb);
 		color: white;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		border-radius: 10px;
+		transition: all .2s ease;
+		&:hover {
+			transform: scale(1.05);
+			background: linear-gradient(to right, #00bc98, #98f7e5);
+		}
 		i {
 			font-size: 1.6rem;
 			margin-right: 20px;
-		}
-	}
-
-	.logout{
-		font-size: 1.6rem;
-		text-decoration: none;
-		margin-top: 30px;
-		height: 30px;
-		width: 120px;
-		background-color: #fb8570;
-		color: white;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		border-radius: 8px;
-		border: none;
-		&:hover {
-			cursor: pointer;
 		}
 	}
 `;
@@ -64,25 +54,16 @@ const StyledWelcome = styled.div `
 
 export default function Welcome(props) {
 
-	const logoutHandler = (e) => {
-		e.preventDefault();
-		// logging out. remove credentials and return to top page
-		helpers.logout(props.setStatus);
-		props.history.push('/');
-	};
-
-
   return (
     <StyledWelcome>
-      <h1>Design Your Life</h1>
+      
+			<h3>What are you doing? <br />Click <i className="fas fa-plus"></i> New Activity to document it.</h3>
 
       <div className='navlinks'>
       	<Link to='/'><i className="fas fa-home"></i>Home</Link>
       	<Link to='/activities'><i className="fas fa-walking"></i>Activities</Link>
       	<Link to='/addactivity'><i className="fas fa-plus"></i>New Activity</Link>
       	<Link to='/insights'><i className="fas fa-lightbulb"></i>Insights</Link>
-
-	    <button className='logout' onClick={logoutHandler}>Log Out</button>
       </div>
     </StyledWelcome>
   )
