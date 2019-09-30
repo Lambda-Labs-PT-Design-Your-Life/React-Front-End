@@ -1,10 +1,6 @@
 import axios from 'axios';
 
 
-//const dummyDateString = (new Date()).toUTCString();
-//const dummyWeekString = (new Date()).toDateString();
-
-
 export const baseURL = 'https://design-your-life-backend.herokuapp.com/';
 
 
@@ -14,7 +10,8 @@ export const getStatus = () => {
   const blankStatus = {
     username: '',
     userID: null,
-    loggedIn: false
+    loggedIn: false,
+    counter: 0
   };
 
   const localStatus = localStorage.getItem('DYL_status');
@@ -37,7 +34,8 @@ export const logout = (setStatus) => {
   const blankStatus = {
     username: '',
     userID: null,
-    loggedIn: false
+    loggedIn: false,
+    counter: 0
   };
 
   localStorage.removeItem('DYL_status');
@@ -49,7 +47,7 @@ export const logout = (setStatus) => {
 
 
 // make axios call to register a new user
-export const register = (setStatus, username, password, email) => {
+export const register = (setLogin, username, password, email) => {
 
   axios
     .post(`${baseURL}api/auth/register`, {
@@ -58,13 +56,25 @@ export const register = (setStatus, username, password, email) => {
       email: email
     })
     .then(res => {
-      console.log('register axios POST call res.data');
-      console.log(res.data);
+      // success!
+      setLogin({
+        username: username,
+        password: password,
+        email: '',
+        emessage: '',
+        imessage: 'Registration successful! You may log in now'
+      });
 
     })
     .catch(err => {
-      console.log('register axios POST call err');
-      console.log(err);
+      // failure!
+      setLogin({
+        username: username,
+        password: password,
+        email: email,
+        imessage: '',
+        emessage: 'Registration failed. Please try again'
+      });
 
     });
 
@@ -72,7 +82,7 @@ export const register = (setStatus, username, password, email) => {
 
 
 // make axios call to log in
-export const login = (setStatus, username, password) => {
+export const login = (setStatus, setLogin, username, password) => {
 
   axios
     .post(`${baseURL}api/auth/login`, {
@@ -80,16 +90,13 @@ export const login = (setStatus, username, password) => {
       password: password
     })
     .then(res => {
-      console.log('login axios POST call res.data');
-      console.log(res.data);
-
+      // success!
       const newStatus = {
         username: username,
-        userID: 4,  // res.data.userID,
-        loggedIn: true
+        userID:  res.data.userID,
+        loggedIn: true,
+        counter: 0
       };
-
-      console.log(newStatus);
 
       localStorage.setItem('DYL_token', res.data.token);
       localStorage.setItem('DYL_status', JSON.stringify(newStatus));
@@ -97,13 +104,19 @@ export const login = (setStatus, username, password) => {
       setStatus(newStatus);
     })
     .catch(err => {
-      console.log('login axios POST call err');
-      console.log(err);
+      // failure!
+      // let the user know that the login failed
+      setLogin({
+        username: username,
+        password: password,
+        email: '',
+        imessage: '',
+        emessage: 'Login failed. Please try again'
+      });
+
     });
 
 };
-
-
 
 
 
@@ -111,6 +124,7 @@ export const login = (setStatus, username, password) => {
 // we need some helper functions to map the formats back and forth
 
 // activities back -> front
+// back end currently does not have an activity ID, so one must be supplied here
 export const activityB2F = (act, id) => {
   const mappedAct = {
     id: null,
@@ -119,8 +133,7 @@ export const activityB2F = (act, id) => {
     notes: '',
     rating: '',
     time: 0,
-    created: '',
-    updated: null
+    date: ''
   };
 
   mappedAct.id = id;
@@ -128,21 +141,22 @@ export const activityB2F = (act, id) => {
   mappedAct.category = act.category;
   mappedAct.notes = act.description;
   mappedAct.time = Number.parseInt(act.duration);
-  mappedAct.created = act.createdDate;
+  mappedAct.rating = act.enjoymentLevel;
+  mappedAct.date = act.createdDate.substring(0, 10);
 
   return mappedAct;
 };
 
 
 // activities front -> back
-export const activityF2B = (act, userID, username) => {
+// back-end needs userID and username as elements, so supply them here
+export const activityF2B = (act, userID) => {
 
   const mappedAct = {
     activityName: "",
     category: "",
-    createdBy: "",
-    createdDate: "",
     description: "",
+    createdDate: "",
     duration: "",
     energyLevel: 1,
     engagementLevel: 1,
@@ -153,32 +167,34 @@ export const activityF2B = (act, userID, username) => {
   mappedAct.activityName = act.name;
   mappedAct.category = act.category;
   mappedAct.description = act.notes;
-  mappedAct.duration = act.time.toString();
-  mappedAct.createdDate = act.created;
-  mappedAct.userID = userID;
-  mappedAct.createdBy = username;
+  mappedAct.duration = act.time.toString() + ' minutes';
+  mappedAct.createdDate = act.date;
+  mappedAct.userId = userID;
+  mappedAct.enjoymentLevel = act.rating;
 
   return mappedAct;
 };
 
 
 // insights front -> back
+// backend requires a userID, so supply it here
 export const insightF2B = (ins, userID) => {
+
   const mappedIns = {
-    userID: null,
-    reflectionText: '',
     reflectionId: null,
+    userId: null,
     week: '',
+    reflectionText: '',
     insights: 'x',
     trends: 'x',
     timestamp: ''
   };
 
-  mappedIns.userID = userID;
+  mappedIns.userId = userID;
   mappedIns.reflectionText = ins.reflection;
   mappedIns.reflectionId = ins.id;
   mappedIns.week = ins.weekOf;
-  mappedIns.timestamp = ins.created;
+  mappedIns.timestamp = ins.created ? ins.created : (new Date()).toUTCString();
 
   return mappedIns;
 };
@@ -186,6 +202,7 @@ export const insightF2B = (ins, userID) => {
 
 // insights back -> front
 export const insightB2F = (ins) => {
+
   const mappedIns = {
     id: null,
     weekOf: '',
@@ -202,6 +219,17 @@ export const insightB2F = (ins) => {
   return mappedIns;
 };
 
+
+// reverse the order of elements in an array, in place
+export const reverse = (arr) => {
+  const len = arr.length;
+  for (let i = 0; i < len/2; i++) {
+    let temp = arr[i];
+    arr[i] = arr[len - i - 1];
+    arr[len - i - 1] = temp;
+  }
+
+};
 
 
 // initialilze Activities
@@ -234,16 +262,13 @@ export const getActivities = (userID, setActivities) => {
       headers: { Authorization: localStorage.getItem("DYL_token") }
     })
     .then(res => {
-      console.log('getActivities axios GET call res.data');
-      console.log(res.data);
-
-      // map activity array to front-end format before updating state
-      setActivities(res.data.map((item, idx) => activityB2F(item, idx)));
+      // map activity array to front-end format and
+      // reverse the order before updating state
+      const newArray = res.data.map((item, idx) => activityB2F(item, idx));
+      reverse(newArray);
+      setActivities(newArray);
     })
     .catch(err => {
-      console.log('getActivities axios GET call err');
-      console.log(err);
-
       if (err.response.status === 401) {
         // invalid token--perhaps expired? force a re-login
         localStorage.removeItem("DYL_token");
@@ -261,19 +286,74 @@ export const getInsights = (userID, setInsights) => {
       headers: { Authorization: localStorage.getItem("DYL_token") }
     })
     .then(res => {
-      console.log('getInsights axios GET call res.data');
-      console.log(res.data);
-
-      // map activity array to front-end format before updating state
-      setInsights(res.data.map((item) => insightB2F(item)));
+      // map insight array to front-end format and
+      // reverse the order before updating state
+      const newArray = res.data.map((item) => insightB2F(item));
+      reverse(newArray);
+      setInsights(newArray);
     })
     .catch(err => {
-      console.log('getInsights axios GET call err');
-      console.log(err);
+      if (err.response.status === 401) {
+        // invalid token--perhaps expired? force a re-login
+        localStorage.removeItem("DYL_token");
+      }
+    });
+
+};
+
+
+// make axios call to add a new activity to the backend
+export const addActivity = (status, setStatus, activity) => {
+
+  // change activity to the format the backend expects
+  const b_activity = activityF2B(activity, status.userID);
+
+  axios
+    .post(`${baseURL}api/activity`, b_activity, {
+      headers: { Authorization: localStorage.getItem("DYL_token") }
+    })
+    .then(res => {
+      // success!
+      // update the status to force a reload of the data
+      setStatus({ ...status, counter: status.counter + 1 });
+    })
+    .catch(err => {
+      // failure!
+
+      // TODO: send a message to the user?
 
       if (err.response.status === 401) {
         // invalid token--perhaps expired? force a re-login
-        //localStorage.removeItem("DYL_token");
+        localStorage.removeItem("DYL_token");
+      }
+    });
+
+};
+
+
+// make axios call to add a new insight to the backend
+export const addInsight = (status, setStatus, insight) => {
+
+  // change insight to the format the backend expects
+  const b_insight = insightF2B(insight, status.userID);
+
+  axios
+    .post(`${baseURL}api/reflection`, b_insight, {
+      headers: { Authorization: localStorage.getItem("DYL_token") }
+    })
+    .then(res => {
+      // success!
+      // update the status to force a reload of the data
+      setStatus({ ...status, counter: status.counter + 1 });
+    })
+    .catch(err => {
+      // failure!
+      
+      // TODO: send a message to the user?
+
+      if (err.response.status === 401) {
+        // invalid token--perhaps expired? force a re-login
+        localStorage.removeItem("DYL_token");
       }
     });
 
@@ -281,22 +361,7 @@ export const getInsights = (userID, setInsights) => {
 
 
 
-
-// get the max id currently in the list
-const getMaxId = (itemList) => {
-  return itemList.reduce((accum, item) => Math.max(accum, item.id), -1);
-};
-
-
-// add a new item to a list
-export const add = (newItem, itemList, setList) => {
-  newItem.created = (new Date()).toUTCString();
-  newItem.updated = null;
-  newItem.id = getMaxId(itemList) + 1;
-  const newList = [...itemList, newItem];
-  setList(newList);
-};
-
+// Note: these items just operate on the objects in memory
 
 // replace an item in a list
 export const edit = (item, itemList, setList) => {

@@ -3,7 +3,6 @@ import styled from 'styled-components';
 
 import ActivityCard from './ActivityCard';
 
-
 const StyledActivitiesFeed = styled.div `
 	display: flex;
 	flex-direction: column;
@@ -14,6 +13,7 @@ const StyledActivitiesFeed = styled.div `
 	h1 {
 		font-size: 3rem;
 		margin: 20px;
+		color: white;
 	}
 `;
 

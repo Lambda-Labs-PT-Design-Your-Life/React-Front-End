@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route } from 'react-router-dom';
+import background from './Assets/background3.jpg'
 import styled from 'styled-components';
 
 import Nav from './Components/Nav/Nav';
@@ -21,24 +22,27 @@ function App() {
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      height: 100vh;
+      width: 100vw;
+      background: url(${background}), rgba(0,0,0,.4);
+      background-attachment: fixed, fixed;
+      background-size: cover, cover;
+      background-position: center, center;
+      background-blend-mode: multiply;
+    }
   `
-
-  /*
-  const testStatus = {username: 'joe', userID: 4, loggedIn: true};
-  const testToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyMiwidXNlcm5hbWUiOiJqb2UiLCJlbWFpbCI6ImpvZUBqb2UuY29tIiwicGFzc3dvcmQiOiIkMmEkMTAkUGM3amJXV0R0NXg4Y21KOUY1dy5wLjhvUnJUY2NRMHFDZGExbWYxTVlHMS9wLmEyTTYyUUcifSwic3ViIjoyMiwidXNlcm5hbWUiOiJqb2UiLCJlbWFpbCI6ImpvZUBqb2UuY29tIiwiaWF0IjoxNTY5NTI0ODM5LCJleHAiOjE1Njk2MTEyMzl9.j7Gc3JU0AQ1ryEM_x5KHyeLbFQ6auv5iTMNJxnEtOfI";
-
-  localStorage.setItem('DYL_status', JSON.stringify(testStatus));
-  localStorage.setItem('DYL_token', testToken);
-  */
 
 
   // check local storage to see if we are already logged in
   // status object looks like {username, userID, loggedIn}
   const currentStatus = helpers.getStatus();
 
-  // REMOVE AFTER TESTING
-  console.log('in App');
-  console.log(currentStatus);
 
   const [status, setStatus] = useState(currentStatus);
 
@@ -57,18 +61,19 @@ function App() {
 
 
 
-  // helpers.add adds an item to an array in state
-  // it will add an id and timestamp to the object before adding it to the list
+  // helpers.addActivity and addInsight post new
+  // items to the backend
   const addActivity = (newActivity) => {
-    helpers.add(newActivity, activities, setActivities);
+    helpers.addActivity(status, setStatus, newActivity);
   };
 
   const addInsight = (newInsight) => {
-    helpers.add(newInsight, insights, setInsights);
+    helpers.addInsight(status, setStatus, newInsight);
   };
 
 
-  // helpers.delete removes an item to an array in state
+
+  // helpers.delete removes an item from an array in memory
   // if the id is not found in the array, no change takes place
   const deleteActivity = (activityId) => {
     helpers.remove(activityId, activities, setActivities);
@@ -79,7 +84,7 @@ function App() {
   };
 
 
-  // helpers.edit an item to an array in state
+  // helpers.edit an item to an array in memory
   // if the id is not found in the array, no change takes place
   const editActivity = (activity) => {
     helpers.edit(activity, activities, setActivities);
@@ -93,7 +98,9 @@ function App() {
   return (
     <StyledApp>
 
-      <Nav search={search} setSearch={setSearch} />
+      <Route path="/" render={(props) => (
+        <Nav {...props} search={search} setSearch={setSearch} status={status} setStatus={setStatus} />
+      )} />
 
       <Route exact path='/' render={(props) => (
         <Landing {...props} status={status} setStatus={setStatus} />
@@ -114,12 +121,13 @@ function App() {
       )} />
 
       <Route path='/addactivity' render={(props) => (
-        <AddActivityForm {...props} addActivity={addActivity} status={status} />
+        <AddActivityForm {...props} addActivity={addActivity} activities={activities} status={status} />
       )} />
 
       <Route path='/editactivity/:id' render={(props) => (
-        <EditActivityForm {...props} editActivity={editActivity} status={status} />
+        <EditActivityForm {...props} editActivity={editActivity} activities={activities} status={status} />
       )} />
+
 
     </StyledApp>
   );

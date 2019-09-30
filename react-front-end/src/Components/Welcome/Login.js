@@ -9,6 +9,11 @@ const StyledLogin = styled.div `
   align-items: center;
   flex-direction: flex-start;
   margin-top: 100px;
+  color: black;
+  background: #eeeeeedd;
+  padding: 5% 2% 10% 2%;
+  border: 3px solid #00bc98;
+  border-radius: 10px;
 
   h1 {
     font-size: 4rem;
@@ -52,6 +57,9 @@ const StyledLogin = styled.div `
       height: 30px;
       width: 280px;
       font-size: 1.4rem;
+      background: none;
+      border: none;
+      border-bottom: 1px solid white;
     }
 
     label {
@@ -111,10 +119,9 @@ export default function Login(props) {
       setLogin({...login, imessage: '',
         emessage: 'You need to supply a username, password and email to register'});
     } else {
-      setLogin({username: '', password: '', email: '', emessage: '',
-        imessage: 'Successfully Registered! You may log in now:'});
-
-      helpers.register(props.setStatus, login.username, login.password, login.email);
+      setLogin({...login, emessage: '', imessage: 'Please wait, registration in progress...'});
+      // message will change based on response from server
+      helpers.register(setLogin, login.username, login.password, login.email);
     }
   };
 
@@ -127,9 +134,9 @@ export default function Login(props) {
       setLogin({...login, imessage: '',
         emessage: 'You need to supply both a username and password to log in'});
     } else {
-      resetForm(e);
-      
-      helpers.login(props.setStatus, login.username, login.password);
+      setLogin({...login, emessage: '', imessage: 'Please wait, login in progress...'});
+      // message will change based on response from server
+      helpers.login(props.setStatus, setLogin, login.username, login.password);
     }
   };
 
